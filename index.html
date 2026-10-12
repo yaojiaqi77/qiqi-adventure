@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>琦琦闯关乐园</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Gaegu:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+  :root{
+    --blue:#5aa9e6; --blue-d:#3a86c8; --blue-l:#bfe0ff; --blue-xl:#e8f5ff;
+    --ink:#3f6f94; --paper:#f4fbff;
+  }
+  html,body{height:100%;}
+  body{
+    font-family:"Ma Shan Zheng","Gaegu","Comic Sans MS",cursive;
+    background:linear-gradient(160deg,#dff2ff,#bfe0ff 60%,#eaf7ff);
+    color:var(--ink);display:flex;align-items:center;justify-content:center;
+    min-height:100%;padding:10px;user-select:none;
+  }
+  .app{
+    width:100%;max-width:430px;min-height:92vh;background:var(--paper);
+    border-radius:28px;box-shadow:0 16px 48px rgba(90,169,230,.35);
+    padding:16px 16px 22px;position:relative;overflow:hidden;display:flex;flex-direction:column;
+  }
+  header{text-align:center;}
+  header h1{font-size:30px;color:var(--blue-d);letter-spacing:2px;}
+  header .sub{font-size:16px;color:#8fb8da;margin-top:-2px;}
+  .hud{display:flex;gap:8px;margin:12px 0;}
+  .hud .cell{flex:1;background:var(--blue-xl);border:2px solid var(--blue-l);border-radius:16px;padding:7px 6px;text-align:center;}
+  .hud .k{font-size:13px;color:#8fb8da;}
+  .hud .v{font-size:22px;color:var(--blue-d);}
+  .ticketbar{background:var(--blue-xl);border:2px dashed var(--blue);border-radius:16px;padding:8px 12px;display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+  .ticketbar .lbl{font-size:15px;color:var(--blue-d);white-space:nowrap;}
+  .ticketbar .bar{flex:1;height:16px;background:#fff;border-radius:9px;overflow:hidden;border:1px solid var(--blue-l);}
+  .ticketbar .fill{height:100%;width:0;background:linear-gradient(90deg,var(--blue-l),var(--blue));transition:width .4s;}
+  .ticketbar .frac{font-size:15px;color:var(--blue-d);white-space:nowrap;}
+  #stage{flex:1;}
+  /* PLACEHOLDER_CSS */
+  /* level select */
+  .levels{display:flex;flex-direction:column;gap:14px;margin-top:6px;}
+  .lv{background:#fff;border:3px solid var(--blue-l);border-radius:20px;padding:16px 18px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:transform .1s;}
+  .lv:active{transform:scale(.98);}
+  .lv.locked{opacity:.5;cursor:not-allowed;filter:grayscale(.4);}
+  .lv .ico{font-size:38px;}
+  .lv .txt{flex:1;}
+  .lv .t{font-size:22px;color:var(--blue-d);}
+  .lv .d{font-size:14px;color:#8fb8da;}
+  .lv .lock{font-size:24px;}
+  .btn{font-family:inherit;border:none;border-radius:16px;padding:12px 22px;font-size:19px;color:#fff;background:var(--blue);cursor:pointer;transition:transform .1s,filter .15s;}
+  .btn:active{transform:scale(.96);}
+  .btn:hover{filter:brightness(1.06);}
+  .btn.ghost{background:#fff;color:var(--blue-d);border:2px solid var(--blue-l);}
+  .btn:disabled{background:#cfe3f3;cursor:not-allowed;}
+  .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+  .topbar .back{font-size:16px;color:var(--blue-d);cursor:pointer;}
+  .center{text-align:center;}
+  /* whack */
+  .wrow{display:flex;justify-content:space-around;margin-bottom:10px;font-size:18px;color:var(--blue-d);}
+  .board{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+  .hole{position:relative;aspect-ratio:1;cursor:pointer;overflow:hidden;border-radius:50%;
+    background:radial-gradient(ellipse at 50% 92%,#7fb3dd 0%,#a7cdec 55%,#c6e2f7 100%);
+    box-shadow:inset 0 -8px 16px rgba(50,100,150,.4);}
+  .hole::after{content:"";position:absolute;left:12%;right:12%;bottom:0;height:36%;background:#5a8fb8;border-radius:50%;filter:blur(1px);}
+  .mole{position:absolute;left:14%;right:14%;bottom:-80%;height:80%;border-radius:50% 50% 48% 48%;transition:bottom .13s ease-out;z-index:2;}
+  .hole.up .mole{bottom:5%;}
+  .mole .eye{position:absolute;top:24%;width:17%;height:19%;background:#fff;border-radius:50%;box-shadow:0 0 0 2px rgba(60,100,140,.25);}
+  .mole .eye::after{content:"";position:absolute;top:34%;left:30%;width:42%;height:42%;background:#3f6f94;border-radius:50%;}
+  .mole .eye.l{left:24%;} .mole .eye.r{right:24%;}
+  .mole .blush{position:absolute;top:48%;width:16%;height:11%;background:rgba(90,169,230,.5);border-radius:50%;}
+  .mole .blush.l{left:14%;} .mole .blush.r{right:14%;}
+  .mole .mouth{position:absolute;top:58%;left:38%;width:24%;height:14%;border:2px solid #3f6f94;border-top:none;border-radius:0 0 40px 40px;}
+  .mole .name{position:absolute;top:3%;left:0;right:0;text-align:center;font-size:16px;color:#3f6f94;}
+  .hole.bonk .mole{transform:scale(.82);}
+  .pop{position:absolute;z-index:5;font-size:22px;color:var(--blue-d);pointer-events:none;left:50%;top:18%;transform:translateX(-50%);animation:floatUp .6s ease-out forwards;}
+  @keyframes floatUp{to{opacity:0;transform:translate(-50%,-30px);}}
+  /* PLACEHOLDER_CSS2 */
+  /* toast */
+  .toast{position:fixed;top:40px;left:50%;transform:translateX(-50%) scale(.8);background:#ff9ec4;color:#fff;
+    padding:12px 26px;border-radius:30px;font-size:22px;opacity:0;pointer-events:none;transition:all .18s;z-index:60;
+    box-shadow:0 8px 24px rgba(255,158,196,.5);}
+  .toast.show{opacity:1;transform:translateX(-50%) scale(1);}
+  /* go board */
+  .goInfo{display:flex;justify-content:space-around;font-size:17px;color:var(--blue-d);margin-bottom:8px;}
+  .goWrap{display:flex;justify-content:center;}
+  #goCanvas{background:#eaf4ff;border:3px solid var(--blue-l);border-radius:12px;touch-action:none;}
+  .goBtns{display:flex;gap:10px;justify-content:center;margin-top:12px;}
+  /* quiz */
+  .quiz h2{font-size:24px;color:var(--blue-d);text-align:center;margin:10px 0 4px;}
+  .quiz .tip{text-align:center;color:#8fb8da;font-size:15px;margin-bottom:14px;}
+  .opts{display:flex;flex-direction:column;gap:12px;}
+  .opt{background:#fff;border:3px solid var(--blue-l);border-radius:18px;padding:14px 16px;font-size:19px;color:var(--ink);cursor:pointer;display:flex;align-items:center;gap:12px;transition:transform .1s;}
+  .opt:active{transform:scale(.98);}
+  .opt .mark{width:26px;height:26px;border:2px solid var(--blue);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;color:#fff;}
+  .opt.sel{background:var(--blue-xl);border-color:var(--blue);}
+  .opt.sel .mark{background:var(--blue);}
+  /* overlay */
+  .overlay{position:absolute;inset:0;background:rgba(90,140,180,.5);display:none;align-items:center;justify-content:center;z-index:50;padding:20px;}
+  .overlay.show{display:flex;animation:fade .25s;}
+  @keyframes fade{from{opacity:0;}to{opacity:1;}}
+  .panel{background:#fff;border-radius:24px;padding:26px 24px;width:100%;max-width:340px;text-align:center;box-shadow:0 12px 40px rgba(0,0,0,.25);}
+  .panel h2{font-size:26px;color:var(--blue-d);margin-bottom:6px;}
+  .panel .emoji{font-size:48px;margin:6px 0;}
+  .panel .big{font-size:40px;color:var(--blue-d);}
+  .panel .reward{background:var(--blue-xl);border-radius:14px;padding:12px;margin:14px 0;font-size:17px;color:var(--blue-d);line-height:1.7;}
+  .panel .btn{width:100%;margin-top:8px;}
+  .ticketCard{display:inline-block;background:linear-gradient(135deg,var(--blue-l),var(--blue));color:#fff;border-radius:12px;padding:10px 20px;font-size:22px;margin:6px 0;box-shadow:0 4px 12px rgba(90,169,230,.4);}
+</style>
+</head>
+<body>
+<!-- PLACEHOLDER_BODY -->
+<div class="app">
+  <header>
+    <h1>琦琦闯关乐园</h1>
+    <div class="sub">蓝色小世界 · 一关一关来挑战～</div>
+  </header>
+  <div class="hud">
+    <div class="cell"><div class="k">奖杯</div><div class="v" id="trophies">0</div></div>
+    <div class="cell"><div class="k">奖券余额</div><div class="v" id="ticketBal">0.0</div></div>
+    <div class="cell"><div class="k">已解锁</div><div class="v" id="unlockedLv">1</div></div>
+  </div>
+  <div class="ticketbar">
+    <span class="lbl">🎟️ 距下个奖杯</span>
+    <div class="bar"><div class="fill" id="tfill"></div></div>
+    <span class="frac" id="tfrac">0.0/1</span>
+  </div>
+  <div id="stage"></div>
+
+  <div class="overlay" id="overlay"><div class="panel" id="panel"></div></div>
+</div>
+<div class="toast" id="toast"></div>
+<!-- PLACEHOLDER_SCRIPT -->
+<script>
+const stage=document.getElementById('stage');
+const overlay=document.getElementById('overlay');
+const panel=document.getElementById('panel');
+const toastEl=document.getElementById('toast');
+let toastTimer=null;
+
+// ---- persistent state ----
+const S={
+  tickets:Number(localStorage.getItem('qq_tickets')||0),   // ticket balance toward trophy
+  trophies:Number(localStorage.getItem('qq_trophies')||0),
+  unlocked:Number(localStorage.getItem('qq_unlocked')||1)   // max level unlocked 1..3
+};
+function save(){
+  localStorage.setItem('qq_tickets',S.tickets);
+  localStorage.setItem('qq_trophies',S.trophies);
+  localStorage.setItem('qq_unlocked',S.unlocked);
+}
+function ra(a,b){return Math.floor(Math.random()*(b-a))+a;}
+function round1(n){return Math.round(n*10)/10;}
+
+function updateHUD(){
+  document.getElementById('trophies').textContent=S.trophies;
+  document.getElementById('ticketBal').textContent=round1(S.tickets);
+  document.getElementById('unlockedLv').textContent=S.unlocked;
+  const pct=Math.min(100,(S.tickets%1===0&&S.tickets>0?1:S.tickets-Math.floor(S.tickets))*100);
+  const frac=round1(S.tickets-Math.floor(S.tickets));
+  document.getElementById('tfill').style.width=((S.tickets-Math.floor(S.tickets))*100)+'%';
+  document.getElementById('tfrac').textContent=frac+'/1';
+}
+function addTickets(v){
+  S.tickets=round1(S.tickets+v);
+  // award trophies for every full 1.0
+  while(S.tickets>=1){ S.tickets=round1(S.tickets-1); S.trophies++; onTrophy(); }
+  save(); updateHUD();
+}
+function onTrophy(){
+  // first trophy unlocks level 2
+  if(S.trophies>=1 && S.unlocked<2){ S.unlocked=2; }
+}
+function toast(msg){
+  toastEl.textContent=msg; toastEl.classList.add('show');
+  clearTimeout(toastTimer); toastTimer=setTimeout(()=>toastEl.classList.remove('show'),900);
+}
+function closeOverlay(){ overlay.classList.remove('show'); }
+<!-- PLACEHOLDER_SCRIPT2 -->
+// ---- home / level select ----
+function showHome(){
+  closeOverlay();
+  const l2=S.unlocked>=2, l3=S.unlocked>=3;
+  stage.innerHTML=`
+    <div class="levels">
+      <div class="lv" onclick="showWhack()">
+        <div class="ico">🐹</div>
+        <div class="txt"><div class="t">第一关 · 打地鼠</div>
+          <div class="d">打得越多奖券面额越大，集满 1 张换奖杯</div></div>
+      </div>
+      <div class="lv ${l2?'':'locked'}" onclick="${l2?'showGo()':'lockMsg(1)'}">
+        <div class="ico">⚫️</div>
+        <div class="txt"><div class="t">第二关 · 琦琦围棋</div>
+          <div class="d">和 AI 对弈，大胜可得半张奖券</div></div>
+        <div class="lock">${l2?'▶️':'🔒'}</div>
+      </div>
+      <div class="lv ${l3?'':'locked'}" onclick="${l3?'showQuiz()':'lockMsg(2)'}">
+        <div class="ico">🍵</div>
+        <div class="txt"><div class="t">第三关 · 猜琦琦爱吃啥</div>
+          <div class="d">答对奖励一整张奖券</div></div>
+        <div class="lock">${l3?'▶️':'🔒'}</div>
+      </div>
+    </div>`;
+}
+function lockMsg(prev){
+  toast(prev===1?'先集齐第一个奖杯哦～':'先通过第二关哦～');
+}
+function settle(title,emoji,rewardHTML,btnText,btnAction){
+  panel.innerHTML=`<h2>${title}</h2><div class="emoji">${emoji}</div>
+    <div class="reward">${rewardHTML}</div>
+    <button class="btn" id="setBtn">${btnText}</button>`;
+  overlay.classList.add('show');
+  document.getElementById('setBtn').onclick=btnAction;
+}
+<!-- PLACEHOLDER_SCRIPT3 -->
+// ================= 第一关 打地鼠 =================
+const W={HOLES:9,TIME:30,NAMES:['zq','qq'],
+  COLORS:['#bfe0ff','#cdefff','#d6ffee','#e3e0ff','#d0f0ff','#c7f5ff','#dce8ff','#e8f0ff','#cfeaff']};
+let w={score:0,time:30,running:false,countdown:null,spawn:null,holes:[]};
+function showWhack(){
+  closeOverlay();
+  stage.innerHTML=`
+    <div class="topbar"><span class="back" onclick="whackQuit()">‹ 返回</span>
+      <span class="back" id="wStart" onclick="whackStart()">开始 ▶</span></div>
+    <div class="wrow"><span>得分 <b id="wScore">0</b></span><span>时间 <b id="wTime">30</b></span></div>
+    <div class="board" id="wBoard"></div>
+    <div class="center" style="margin-top:12px;color:#8fb8da;font-size:14px;">地鼠冒头就戳它，点空了会被 qq 骂哦～</div>`;
+  const b=document.getElementById('wBoard'); w.holes=[];
+  for(let i=0;i<W.HOLES;i++){
+    const h=document.createElement('div'); h.className='hole';
+    h.addEventListener('click',()=>whackClick(i));
+    b.appendChild(h); w.holes.push({el:h,up:false,timer:null});
+  }
+}
+function whackStart(){
+  if(w.running) return;
+  w.running=true; w.score=0; w.time=W.TIME;
+  document.getElementById('wScore').textContent=0;
+  document.getElementById('wTime').textContent=w.time;
+  document.getElementById('wStart').style.visibility='hidden';
+  whackSpawn();
+  w.countdown=setInterval(()=>{w.time--;document.getElementById('wTime').textContent=w.time;if(w.time<=0)whackEnd();},1000);
+}
+function whackRaise(i){
+  const h=w.holes[i]; if(h.up) return;
+  const nm=W.NAMES[ra(0,2)], col=W.COLORS[ra(0,W.COLORS.length)];
+  h.el.innerHTML='<div class="mole" style="background:'+col+'"><div class="name">'+nm+'</div>'+
+    '<div class="eye l"></div><div class="eye r"></div><div class="blush l"></div><div class="blush r"></div><div class="mouth"></div></div>';
+  h.up=true; h.el.classList.add('up');
+  const base=Math.max(380,980-(W.TIME-w.time)*24), up=ra(base*0.6,base);
+  h.timer=setTimeout(()=>whackLower(i),up);
+}
+<!-- PLACEHOLDER_SCRIPT4 -->
+function whackLower(i){
+  const h=w.holes[i]; clearTimeout(h.timer); h.up=false;
+  h.el.classList.remove('up','bonk');
+  setTimeout(()=>{ if(!h.up) h.el.innerHTML=''; },150);
+}
+function whackSpawn(){
+  if(!w.running) return;
+  const prog=W.TIME-w.time, maxUp=prog>18?3:2, cnt=ra(1,maxUp+1);
+  const free=w.holes.map((h,i)=>i).filter(i=>!w.holes[i].up);
+  for(let k=0;k<cnt&&free.length;k++){ whackRaise(free.splice(ra(0,free.length),1)[0]); }
+  const gap=Math.max(360,900-prog*22);
+  w.spawn=setTimeout(whackSpawn,ra(gap*0.7,gap));
+}
+function whackClick(i){
+  if(!w.running) return;
+  const h=w.holes[i];
+  if(h.up&&!h.el.classList.contains('bonk')){
+    w.score++; document.getElementById('wScore').textContent=w.score;
+    h.el.classList.add('bonk');
+    const p=document.createElement('div');p.className='pop';p.textContent='+1';h.el.appendChild(p);setTimeout(()=>p.remove(),600);
+    setTimeout(()=>whackLower(i),120);
+  }else{ toast('你个笨蛋！'); }
+}
+function whackStop(){
+  w.running=false; clearInterval(w.countdown); clearTimeout(w.spawn);
+  w.holes.forEach((h,i)=>{clearTimeout(h.timer);h.up=false;h.el.classList.remove('up','bonk');h.el.innerHTML='';});
+}
+function whackQuit(){ whackStop(); showHome(); }
+function whackEnd(){
+  whackStop();
+  const sb=document.getElementById('wStart'); if(sb){sb.style.visibility='visible';sb.textContent='再来一局 ▶';}
+  // 打得越多，奖券面额越大
+  const value=round1(Math.min(1, w.score/40)); // 40只 = 满额1张
+  const before=S.trophies;
+  if(value>0) addTickets(value);
+  const gotTrophy=S.trophies>before;
+  let html='本局打中 <b>'+w.score+'</b> 只地鼠<br>'+
+    '<span class="ticketCard">🎟️ 面额 '+value+' 张</span><br>'+
+    '当前奖券余额：'+round1(S.tickets)+' / 1 张';
+  if(gotTrophy){
+    html+='<br>🏆 恭喜集满一张，获得第 '+S.trophies+' 个奖杯！';
+    if(S.unlocked>=2) html+='<br>✨ 已解锁第二关「琦琦围棋」！';
+  }
+  settle('时间到！','🐹',html,'回到关卡',showHome);
+}
+<!-- PLACEHOLDER_SCRIPT5 -->
+// ================= 第二关 围棋 =================
+const GO={N:9, WIN_RATIO:0.6}; // 玩家(黑)点数占比达到该值即判大胜
+let g=null;
+function showGo(){
+  closeOverlay();
+  stage.innerHTML=`
+    <div class="topbar"><span class="back" onclick="showHome()">‹ 返回</span>
+      <span class="back">琦琦围棋 · 9 路</span></div>
+    <div class="goInfo"><span>你(黑) <b id="goB">0</b></span><span>琦琦(白) <b id="goW">0</b></span></div>
+    <div class="goWrap"><canvas id="goCanvas"></canvas></div>
+    <div class="goBtns">
+      <button class="btn ghost" onclick="goPass()">停一手</button>
+      <button class="btn ghost" onclick="goReset()">重下</button>
+      <button class="btn" onclick="goFinish()">结束数子</button>
+    </div>
+    <div class="center" style="margin-top:8px;color:#8fb8da;font-size:13px;">点交叉点落子，占到全盘约六成以上就能大胜～</div>`;
+  goReset();
+}
+function goReset(){
+  const N=GO.N;
+  g={N:N, b:new Array(N*N).fill(0), prev:null, turn:1, over:false};
+  const cv=document.getElementById('goCanvas');
+  const W=Math.min(330, stage.clientWidth-6);
+  g.px=W; g.margin=W*0.07; g.cell=(W-2*g.margin)/(N-1);
+  cv.width=W; cv.height=W;
+  cv.onclick=goTap;
+  goDraw(); goScoreUpdate();
+}
+function gi(x,y){return y*g.N+x;}
+function neighbors(x,y){const r=[];if(x>0)r.push([x-1,y]);if(x<g.N-1)r.push([x+1,y]);if(y>0)r.push([x,y-1]);if(y<g.N-1)r.push([x,y+1]);return r;}
+function groupLibs(board,x,y){
+  const color=board[gi(x,y)], seen={}, stones=[], libs={};
+  const st=[[x,y]]; seen[gi(x,y)]=1;
+  while(st.length){const[cx,cy]=st.pop();stones.push([cx,cy]);
+    for(const[nx,ny]of neighbors(cx,cy)){const id=ny*g.N+nx;const v=board[id];
+      if(v===0)libs[id]=1;
+      else if(v===color&&!seen[id]){seen[id]=1;st.push([nx,ny]);}}}
+  return {stones, libs:Object.keys(libs).length};
+}
+<!-- PLACEHOLDER_SCRIPT6 -->
+// try a move on a copy; return {ok, board, captured} (null board if illegal)
+function tryMove(board,x,y,color){
+  if(board[gi(x,y)]!==0) return {ok:false};
+  const nb=board.slice(); nb[gi(x,y)]=color;
+  const opp=color===1?2:1; let captured=0;
+  for(const[nx,ny]of neighbors(x,y)){
+    if(nb[ny*g.N+nx]===opp){
+      const grp=groupLibs(nb,nx,ny);
+      if(grp.libs===0){ grp.stones.forEach(([sx,sy])=>{nb[sy*g.N+sx]=0;captured++;}); }
+    }
+  }
+  // suicide check
+  if(groupLibs(nb,x,y).libs===0 && captured===0) return {ok:false};
+  // simple ko: cannot recreate previous board
+  if(g.prev && nb.join('')===g.prev) return {ok:false};
+  return {ok:true, board:nb, captured};
+}
+function goTap(e){
+  if(g.over||g.turn!==1) return;
+  const cv=e.currentTarget, r=cv.getBoundingClientRect();
+  const cx=e.clientX-r.left, cy=e.clientY-r.top;
+  const x=Math.round((cx-g.margin)/g.cell), y=Math.round((cy-g.margin)/g.cell);
+  if(x<0||y<0||x>=g.N||y>=g.N) return;
+  const mv=tryMove(g.b,x,y,1);
+  if(!mv.ok){ toast('这里不能下哦'); return; }
+  const snap=g.b.join('');
+  g.b=mv.board; g.prev=snap; g.turn=2;
+  goDraw(); goScoreUpdate();
+  setTimeout(aiMove,350);
+}
+function goPass(){ if(g.over)return; g.turn=2; toast('你停了一手'); setTimeout(aiMove,300); }
+function aiMove(){
+  if(g.over) return;
+  const moves=[];
+  for(let y=0;y<g.N;y++)for(let x=0;x<g.N;x++){
+    const mv=tryMove(g.b,x,y,2);
+    if(mv.ok){
+      const own=groupLibs(mv.board,x,y).libs;
+      const center=1-(Math.abs(x-(g.N-1)/2)+Math.abs(y-(g.N-1)/2))/g.N;
+      let sc=mv.captured*6+own*1.2+center*1.5+Math.random()*1.5;
+      moves.push({x,y,mv,sc});
+    }
+  }
+  if(!moves.length){ g.turn=1; return; }
+  moves.sort((a,b)=>b.sc-a.sc);
+  const pick=moves[ra(0,Math.min(3,moves.length))];
+  const snap=g.b.join('');
+  g.b=pick.mv.board; g.prev=snap; g.turn=1;
+  goDraw(); goScoreUpdate();
+}
+<!-- PLACEHOLDER_SCRIPT7 -->
+function goDraw(){
+  const cv=document.getElementById('goCanvas'); if(!cv)return;
+  const ctx=cv.getContext('2d'), N=g.N, m=g.margin, c=g.cell;
+  ctx.clearRect(0,0,g.px,g.px);
+  ctx.strokeStyle='#8fb8da'; ctx.lineWidth=1.3;
+  for(let i=0;i<N;i++){
+    ctx.beginPath();ctx.moveTo(m,m+i*c);ctx.lineTo(m+(N-1)*c,m+i*c);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(m+i*c,m);ctx.lineTo(m+i*c,m+(N-1)*c);ctx.stroke();
+  }
+  // star points (center + corners-ish for 9x9)
+  ctx.fillStyle='#8fb8da';
+  [[2,2],[6,2],[2,6],[6,6],[4,4]].forEach(([sx,sy])=>{ctx.beginPath();ctx.arc(m+sx*c,m+sy*c,2.5,0,7);ctx.fill();});
+  for(let y=0;y<N;y++)for(let x=0;x<N;x++){
+    const v=g.b[gi(x,y)]; if(!v)continue;
+    const px=m+x*c, py=m+y*c, rad=c*0.44;
+    ctx.beginPath(); ctx.arc(px,py,rad,0,7);
+    if(v===1){ const gd=ctx.createRadialGradient(px-4,py-4,2,px,py,rad); gd.addColorStop(0,'#6a7f93');gd.addColorStop(1,'#3f6f94'); ctx.fillStyle=gd; }
+    else { const gd=ctx.createRadialGradient(px-4,py-4,2,px,py,rad); gd.addColorStop(0,'#ffffff');gd.addColorStop(1,'#d6ecff'); ctx.fillStyle=gd; }
+    ctx.fill(); ctx.strokeStyle='rgba(63,111,148,.5)';ctx.lineWidth=1;ctx.stroke();
+  }
+}
+function area(board){
+  // Chinese-ish area scoring: stones + single-color-bordered empty regions
+  let black=0,white=0; const N=g.N, seen=new Array(N*N).fill(false);
+  for(let i=0;i<N*N;i++){ if(board[i]===1)black++; else if(board[i]===2)white++; }
+  for(let y=0;y<N;y++)for(let x=0;x<N;x++){
+    const id=gi(x,y); if(board[id]!==0||seen[id])continue;
+    const st=[[x,y]]; seen[id]=true; const region=[]; const border=new Set();
+    while(st.length){const[cx,cy]=st.pop();region.push([cx,cy]);
+      for(const[nx,ny]of neighbors(cx,cy)){const nid=ny*N+nx;const v=board[nid];
+        if(v===0){if(!seen[nid]){seen[nid]=true;st.push([nx,ny]);}}else border.add(v);}}
+    if(border.size===1){ if(border.has(1))black+=region.length; else white+=region.length; }
+  }
+  return {black,white};
+}
+function goScoreUpdate(){
+  const s=area(g.b);
+  const b=document.getElementById('goB'),ww=document.getElementById('goW');
+  if(b)b.textContent=s.black; if(ww)ww.textContent=s.white;
+}
+<!-- PLACEHOLDER_SCRIPT8 -->
+function goFinish(){
+  if(g.over) return;
+  g.over=true;
+  const s=area(g.b), total=s.black+s.white;
+  const share= total>0 ? s.black/total : 0;
+  const win = share>=GO.WIN_RATIO && s.black>s.white;
+  if(win){
+    if(S.unlocked<3){ S.unlocked=3; save(); }
+    addTickets(0.5);
+    settle('琦琦表扬你！','🏅',
+      '你(黑) <b>'+s.black+'</b> 点，琦琦(白) '+s.white+'点<br>占比 '+Math.round(share*100)+'% · 大胜！<br>'+
+      '<span class="ticketCard">🎟️ 奖励 0.5 张</span><br>✨ 已解锁第三关！',
+      '回到关卡', showHome);
+  }else{
+    settle('还差一点点～','🤏',
+      '你(黑) <b>'+s.black+'</b> 点，琦琦(白) '+s.white+'点<br>'+
+      '需要占到全盘 '+Math.round(GO.WIN_RATIO*100)+'% 以上才算大胜<br>再来一局试试！',
+      '重下一局', showGo);
+  }
+}
+<!-- PLACEHOLDER_SCRIPT9 -->
+// ================= 第三关 猜食物 =================
+const QOPTS=[
+  {k:'A',t:'抹茶类'},
+  {k:'B',t:'西红柿炒鸡蛋'},
+  {k:'C',t:'荔枝香辣味烤鱼'},
+  {k:'D',t:'琦琦什么都喜欢吃'}
+];
+let qSel={};
+function showQuiz(){
+  closeOverlay(); qSel={};
+  stage.innerHTML=`
+    <div class="topbar"><span class="back" onclick="showHome()">‹ 返回</span>
+      <span class="back">第三关</span></div>
+    <div class="quiz">
+      <h2>琦琦最喜欢吃什么？</h2>
+      <div class="tip">（可多选，选好后点确定）</div>
+      <div class="opts" id="opts"></div>
+      <button class="btn" style="width:100%;margin-top:16px;" onclick="quizCheck()">确定</button>
+    </div>`;
+  const box=document.getElementById('opts');
+  QOPTS.forEach(o=>{
+    const d=document.createElement('div');d.className='opt';d.dataset.k=o.k;
+    d.innerHTML='<div class="mark"></div><div>'+o.k+'. '+o.t+'</div>';
+    d.onclick=()=>{ qSel[o.k]=!qSel[o.k]; d.classList.toggle('sel',qSel[o.k]); d.querySelector('.mark').textContent=qSel[o.k]?'✓':''; };
+    box.appendChild(d);
+  });
+}
+function quizCheck(){
+  const all=QOPTS.every(o=>qSel[o.k]);
+  const any=QOPTS.some(o=>qSel[o.k]);
+  if(all){
+    addTickets(1);
+    settle('答对啦！🎉','😋',
+      '琦琦呀，是什么都喜欢吃～ 全选才对！<br><span class="ticketCard">🎟️ 奖励 1 张奖券</span>',
+      '回到关卡', showHome);
+  }else if(!any){
+    toast('选一个再确定呀～');
+  }else{
+    toast('再想想，琦琦可不挑食哦～');
+  }
+}
+
+// ---- init ----
+updateHUD();
+showHome();
+</script>
+</body>
+</html>
